@@ -12,9 +12,27 @@
 
 ## Usage
 
-Cubby blobs are accessed by colon-delimited keys, like `blog:hello-cubby`. To edit a Cubby blob, simply run the command `:CubbyGet <key>` in Neovim. This will open the body of the blob in a new buffer. You can edit the blob, and then commit your changes by running `:CubbySave`. If you don't want to save your changes, simply discard the blob (i.e. `:q!` or `<leader>x` or similar).
+### Viewing and editing 
+
+Cubby blobs are accessed by colon-delimited keys, like `blog:hello-cubby`. To edit a Cubby blob, simply run the command `:CubbyGet <key>` in Neovim. This will open the body of the blob in a new buffer. 
+
+You can edit the blob, and then commit your changes by running `:CubbySave`. If you don't want to save your changes, simply discard the blob (i.e. `:q!` or `<leader>x` or similar).
+
+### Listing blobs
 
 To view a `cubby list`, use the `:CubbyList` command.
+
+### Creating blobs
+
+To quickly create a new blob, you can use `:CubbyPut <key> [<type>]`. For example, `:CubbyPut home:some-notes markdown` or `:CubbyPut home:hello-world` (the type is optional).
+
+Note that many of the advanced options in `cubby put` are not available -- if you want to use more of the available options, you can always invoke the `cubby` CLI, e.g. `:!cubby put ...`. The `:CubbyPut` command is intended more as a quick shortcut. 
+
+### User settings
+
+Set plugin settings using `:CubbySet <config key> <value>`. Available settings include:
+
+- `OpenWith` (default: `enew`): specifies the `vim` command to use when opening a new buffer for Cubby output (e.g. with `:CubbyList` or `:CubbyGet`). Example: `:CubbySet OpenWith vnew` would cause the plugin to open Cubby content in a vertical split buffer. By default, it opens a new full-screen buffer.
 
 ### Key mappings
 
