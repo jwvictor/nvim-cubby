@@ -17,7 +17,7 @@ local function open_buffer()
         vim.api.nvim_command('enew')
         buffer_number = vim.api.nvim_get_current_buf()
         local relbuf = buffer_number
-        vim.api.nvim_buf_attach(buffer_number, false, {on_detach=function(...) cubby_buffers[relbuf] = nil end})
+        vim.api.nvim_buf_attach(buffer_number, false, {on_detach=function(...) if cubby_buffers[relbuf] ~= nil then cubby_buffers[relbuf] = nil end end})
     end
 end
 
@@ -43,7 +43,7 @@ local function cubby_save()
     print("Saving to Cubby: " .. key)
     local lines_dat = vim.api.nvim_buf_get_lines(cur_buf, 0, -1, true)
     -- vim.api.nvim_buf_delete(cur_buf, {force = true})
-    local f = io.popen("cubby set \"" .. key .. "\"", "w")
+    local f = io.popen("cubby set \"" .. key .. "\" 2>/dev/null", "w")
     f:write(table.concat(lines_dat, "\n"))
     f:close()
   end
