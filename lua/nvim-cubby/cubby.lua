@@ -10,11 +10,29 @@ local M = {}
 local buffer_number = -1
 local cubby_buffers = {}
 
+local user_options = {}
+
+local OpenWith = "OpenWith"
+
+local function user_option_set(opt_name, opt_value)
+  if opt_value == "false" then
+    user_options[opt_name] = false
+  elseif opt_value == "true" then
+    user_options[opt_name] = true
+  else
+    user_options[opt_name] = opt_value
+  end
+end
+
 -- Open a new buffer
 local function open_buffer()
     if true or buffer_number == -1 then
         -- vim.api.nvim_command('botright vnew')
-        vim.api.nvim_command('enew')
+        local open_cmd = user_options[OpenWith];
+        if open_cmd == nil then
+          open_cmd = 'enew'
+        end
+        vim.api.nvim_command(open_cmd)
         buffer_number = vim.api.nvim_get_current_buf()
         local relbuf = buffer_number
         vim.api.nvim_buf_attach(buffer_number, false, {on_detach=function(...) if cubby_buffers[relbuf] ~= nil then cubby_buffers[relbuf] = nil end end})
@@ -133,6 +151,10 @@ function M.get(key)
   vim.api.nvim_buf_set_lines(buffer_number, 0, -1, true, lines)
   cubby_get_set_filetype(key)
   current_buffer_set_nofile()
+end
+
+function M.set_option(key, value)
+  user_option_set(key, value)
 end
 
 function M.save()
