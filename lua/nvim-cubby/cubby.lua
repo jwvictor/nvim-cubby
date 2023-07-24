@@ -26,6 +26,9 @@ local function filetype_to_vim(ft)
   if ft == "markdown" then
     return "markdown"
   end
+  if ft == "python" then
+    return "python"
+  end
   -- Default to returning the Cubby type name
   return ft
 end
@@ -67,6 +70,17 @@ local function cubby_list()
   return result
 end
 
+local function cubby_put(key, blob_type)
+  local cmd = "cubby put \"" .. key .. "\" 2> /dev/null"
+  if blob_type ~= nil then
+    cmd = "cubby put -T " .. blob_type .. " \"" .. key .. "\" 2> /dev/null"
+  end
+  local handle = io.popen(cmd)
+  local result = handle:read("*a")
+  handle:close()
+  return result
+end
+
 -- Get a Cubby blob in a new buffer
 local function cubby_get(key)
   -- popen out to cubby cli
@@ -76,17 +90,22 @@ local function cubby_get(key)
   local handle = io.popen(cmd)
   local result = handle:read("*a")
   handle:close()
+  return result
+end
+
+local function cubby_get_set_filetype(key)
+  local cmd_meta = "cubby get -V=stdout -b=false \"" .. key .. "\" 2>/dev/null"
   local handle_meta = io.popen(cmd_meta)
   local result_meta = string.gsub(handle_meta:read("*a"), "[\n\r\t]", "")
-  if result_meta == nil or string.len(result_meta) < 1 then
+  if result_meta == nil then
+    return nil
+  elseif string.len(result_meta) < 1 then
+    handle_meta:close()
     return nil
   end
-  --local result_meta = handle_meta:read("*a")
-  --result_meta = '{"type": "markdown"}'
   handle_meta:close()
   local metadata = json.parse(result_meta)
   vim.api.nvim_command('set filetype=' .. filetype_to_vim(metadata["type"]))
-  -- print(result)
   return result
 end
 
@@ -108,6 +127,7 @@ function M.get(key)
     table.insert(lines, s)
   end
   vim.api.nvim_buf_set_lines(buffer_number, 0, -1, true, lines)
+  cubby_get_set_filetype(key)
 end
 
 function M.save()
@@ -117,6 +137,19 @@ function M.save()
   end
   cubby_save()
 end
+
+function M.put(key, blob_type)
+  if not cubby_check() then
+    print("Cubby is not installed in PATH - please see cubbycli.com for instructions.")
+    return
+  end
+  local res = cubby_put(key, blob_type)
+  if res == nil or string.len(res) < 1 then
+    print("Invalid key for Cubby put.")
+    return
+  end
+end
+
 
 function M.list()
   if not cubby_check() then

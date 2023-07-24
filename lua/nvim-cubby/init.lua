@@ -10,5 +10,6 @@ local M = {}
 M.cubby_get = cubby.get
 M.cubby_save = cubby.save
 M.cubby_list = cubby.list
+M.cubby_put = cubby.put
 
 return M
