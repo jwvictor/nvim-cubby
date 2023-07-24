@@ -70,14 +70,17 @@ end
 -- Get a Cubby blob in a new buffer
 local function cubby_get(key)
   -- popen out to cubby cli
-  local cmd = "cubby get -V=stdout \"" .. key .. "\""
-  local cmd_meta = "cubby get -V=stdout -b=false \"" .. key .. "\""
+  local cmd = "cubby get -V=stdout \"" .. key .. "\" 2>/dev/null"
+  local cmd_meta = "cubby get -V=stdout -b=false \"" .. key .. "\" 2>/dev/null"
   -- print("Cmd: " .. cmd)
   local handle = io.popen(cmd)
   local result = handle:read("*a")
   handle:close()
   local handle_meta = io.popen(cmd_meta)
   local result_meta = string.gsub(handle_meta:read("*a"), "[\n\r\t]", "")
+  if result_meta == nil or string.len(result_meta) < 1 then
+    return nil
+  end
   --local result_meta = handle_meta:read("*a")
   --result_meta = '{"type": "markdown"}'
   handle_meta:close()
@@ -93,9 +96,13 @@ function M.get(key)
     print("Cubby is not installed in PATH - please see cubbycli.com for instructions.")
     return
   end
+  local res = cubby_get(key)
+  if res == nil then
+    print("No blob found with key: " .. key)
+    return
+  end
   open_buffer()
   cubby_buffers[vim.api.nvim_get_current_buf()] = key
-  local res = cubby_get(key)
   local lines = {}
   for s in res:gmatch("([^\n]*)\n?") do
     table.insert(lines, s)
