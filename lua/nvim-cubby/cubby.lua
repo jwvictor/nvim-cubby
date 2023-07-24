@@ -109,6 +109,10 @@ local function cubby_get_set_filetype(key)
   return result
 end
 
+local function current_buffer_set_nofile()
+  vim.api.nvim_command('set bt=nofile')
+end
+
 -- Accessor functions (public)
 function M.get(key)
   if not cubby_check() then
@@ -128,6 +132,7 @@ function M.get(key)
   end
   vim.api.nvim_buf_set_lines(buffer_number, 0, -1, true, lines)
   cubby_get_set_filetype(key)
+  current_buffer_set_nofile()
 end
 
 function M.save()
@@ -163,6 +168,7 @@ function M.list()
     table.insert(lines, s)
   end
   vim.api.nvim_buf_set_lines(buffer_number, 0, -1, true, lines)
+  current_buffer_set_nofile()
 end
 
 return M
