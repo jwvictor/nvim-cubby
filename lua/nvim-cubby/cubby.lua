@@ -9,6 +9,7 @@ local M = {}
 
 local buffer_number = -1
 local cubby_buffers = {}
+local cubby_list_buffers = {}
 
 local user_options = {}
 
@@ -49,6 +50,26 @@ local function filetype_to_vim(ft)
   end
   -- Default to returning the Cubby type name
   return ft
+end
+
+-- Go to line in Cubby listing
+local function cubby_go()
+  local cur_buf = vim.api.nvim_get_current_buf()
+  local ids = cubby_list_buffers[cur_buf]
+  if ids == nil then
+    print("This buffer is not a Cubby list.")
+    return
+  end
+  local cursor = vim.api.nvim_win_get_cursor(0)
+  local r = cursor[1]
+  -- print("Current row: " .. r)
+  --print("Current ids: " .. table.tostring(ids))
+  -- print("Current ids len: " .. #ids)
+  if r <= #ids then
+    local id = ids[r]
+    -- print(id)
+    M.get(id)
+  end
 end
 
 -- Save active Cubby buffer
@@ -170,6 +191,13 @@ function M.save()
   cubby_save()
 end
 
+function M.go()
+  if not cubby_check() then
+    print("Cubby is not installed in PATH - please see cubbycli.com for instructions.")
+    return
+  end
+  cubby_go()
+end
 function M.put(key, blob_type)
   if not cubby_check() then
     print("Cubby is not installed in PATH - please see cubbycli.com for instructions.")
@@ -182,7 +210,7 @@ function M.put(key, blob_type)
   end
 end
 
-local function render_list(data, lines, n_indents0)
+local function render_list(data, lines, ids, n_indents0)
   local n_indents = 0
   if n_indents0 ~= nil then
     n_indents = n_indents0
@@ -191,11 +219,12 @@ local function render_list(data, lines, n_indents0)
   for i = 1, n_indents do
     s = s .. ". "
   end
-  s = s .. data["title"] .. " - " .. data["id"]
+  s = s .. data["title"] -- .. " - " .. data["id"]
   table.insert(lines, s)
+  table.insert(ids, data["id"])
   if data["children"] ~= nil then
     for i, v in ipairs(data["children"]) do
-      render_list(v, lines, n_indents+1)
+      render_list(v, lines, ids, n_indents+1)
     end
   end
 end
@@ -208,7 +237,10 @@ function M.list()
   open_buffer()
   local dat = cubby_list()
   local lines = {}
-  render_list(dat, lines)
+  local ids = {}
+  render_list(dat, lines, ids)
+  local cur_buf = vim.api.nvim_get_current_buf()
+  cubby_list_buffers[cur_buf] = ids
   vim.api.nvim_buf_set_lines(buffer_number, 0, -1, true, lines)
   current_buffer_set_nofile()
 end
