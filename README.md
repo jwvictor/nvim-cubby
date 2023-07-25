@@ -35,6 +35,7 @@ Note that many of the advanced options in `cubby put` are not available -- if yo
 Set plugin settings using `:CubbySet <config key> <value>`. Available settings include:
 
 - `OpenWith` (default: `enew`): specifies the `vim` command to use when opening a new buffer for Cubby output (e.g. with `:CubbyList` or `:CubbyGet`). Example: `:CubbySet OpenWith vnew` would cause the plugin to open Cubby content in a vertical split buffer. By default, it opens a new full-screen buffer.
+- `CryptoPass` (default: none): overrides the configured Cubby passphrase used to encrypt and decrypt blobs. Use this if you want to interact with a blob using a different encryption key than you have configured normally (i.e. by environment variables or in your `cubby-client.yaml`.
 
 ### Key mappings
 
