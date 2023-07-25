@@ -13,6 +13,7 @@ local cubby_list_buffers = {}
 local user_options = {}
 
 local OpenWith = "OpenWith"
+local CryptoPass = "CryptoPass"
 
 local function buffer_readonly(buf)
   vim.api.nvim_buf_set_option(buf, "readonly", true)
@@ -98,6 +99,15 @@ local function cubby_go()
   end
 end
 
+-- If the user set an override crypto key, use it
+local function maybe_cryptopass_command(cmd)
+  if user_options[CryptoPass] ~= nil then
+    return "CUB_CRYPTO_SYMMETRIC_KEY=" .. user_options[CryptoPass] .. " " .. cmd
+  else
+    return cmd
+  end
+end
+
 -- Save active Cubby buffer
 local function cubby_save()
   local cur_buf = vim.api.nvim_get_current_buf()
@@ -108,7 +118,9 @@ local function cubby_save()
     print("Saving to Cubby: " .. key)
     local lines_dat = vim.api.nvim_buf_get_lines(cur_buf, 0, -1, true)
     -- vim.api.nvim_buf_delete(cur_buf, {force = true})
-    local f = io.popen("cubby set \"" .. key .. "\" 2>/dev/null", "w")
+    local cmd = "cubby set \"" .. key .. "\" 2>/dev/null"
+    cmd = maybe_cryptopass_command(cmd)
+    local f = io.popen(cmd, "w")
     f:write(table.concat(lines_dat, "\n"))
     f:close()
   end
@@ -145,6 +157,7 @@ local function cubby_put(key, blob_type)
   if blob_type ~= nil then
     cmd = "cubby put -T " .. blob_type .. " \"" .. key .. "\" 2> /dev/null"
   end
+  cmd = maybe_cryptopass_command(cmd)
   local handle = io.popen(cmd)
   local result = handle:read("*a")
   handle:close()
@@ -155,7 +168,7 @@ end
 local function cubby_get(key)
   -- popen out to cubby cli
   local cmd = "cubby get -V=stdout \"" .. key .. "\" 2>/dev/null"
-  local cmd_meta = "cubby get -V=stdout -b=false \"" .. key .. "\" 2>/dev/null"
+  cmd = maybe_cryptopass_command(cmd)
   -- print("Cmd: " .. cmd)
   local handle = io.popen(cmd)
   local result = handle:read("*a")
@@ -165,6 +178,7 @@ end
 
 local function cubby_get_set_filetype(key)
   local cmd_meta = "cubby get -V=stdout -b=false \"" .. key .. "\" 2>/dev/null"
+  cmd_meta = maybe_cryptopass_command(cmd_meta)
   local handle_meta = io.popen(cmd_meta)
   local result_meta = string.gsub(handle_meta:read("*a"), "[\n\r\t]", "")
   if result_meta == nil then
