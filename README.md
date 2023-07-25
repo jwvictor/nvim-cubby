@@ -14,13 +14,15 @@
 
 ### Viewing and editing 
 
-Cubby blobs are accessed by colon-delimited keys, like `blog:hello-cubby`. To edit a Cubby blob, simply run the command `:CubbyGet <key>` in Neovim. This will open the body of the blob in a new buffer. 
+Cubby blobs are usually accessed by colon-delimited prefix keys, like `blog:hello-cubby` (or `blo:hel` to use prefixes). To edit a Cubby blob, simply run the command `:CubbyGet <key>` in Neovim. This will open the body of the blob in a new buffer. If you don't remember a key for the blob in question, you can use the list function to select it. 
 
 You can edit the blob, and then commit your changes by running `:CubbySave`. If you don't want to save your changes, simply discard the blob (i.e. `:q!` or `<leader>x` or similar).
 
 ### Listing blobs
 
-To view a `cubby list`, use the `:CubbyList` command.
+To view a `cubby list`, use the `:CubbyList` command. This will open a `cubby list` in a new, read-only buffer.
+
+You can use this buffer to quickly jump into any of your blobs. Simply go to the line number of the blob you want to open and run `:CubbyGo`. nvim-cubby will obtain the blob's unique ID and open it in a new buffer. 
 
 ### Creating blobs
 
@@ -36,11 +38,14 @@ Set plugin settings using `:CubbySet <config key> <value>`. Available settings i
 
 ### Key mappings
 
-You can add a key mapping to load `:CubbyList`. For example, in NvChad, you add this to your `~/.config/nvim/lua/custom/mappings.lua`:
+You can add a key mapping to load `:CubbyList` and to open blobs from the listing with `:CubbyGo`. For example, in NvChad, you add this to your `~/.config/nvim/lua/custom/mappings.lua`:
 
 ```
     ["<leader>cb"] = { "<cmd> CubbyList <CR>", "Show Cubby listing", opts = { nowait = true } },
+    ["<leader>cg"] = { "<cmd> CubbyGo <CR>", "Get blob in Cubby listing", opts = { nowait = true } },
 ```
+
+But there are a bunch of ways to do this based on your particular setup and I won't bore you with the details for each.
 
 ## Security benefits
 
