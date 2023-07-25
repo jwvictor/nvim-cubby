@@ -14,13 +14,30 @@ local user_options = {}
 
 local OpenWith = "OpenWith"
 
-local function user_option_set(opt_name, opt_value)
+local function buffer_readonly(buf)
+  vim.api.nvim_buf_set_option(buf, "readonly", true)
+  vim.api.nvim_buf_set_option(buf, "modifiable", false)
+end
+
+local function buffer_readonly_disable(buf)
+  vim.api.nvim_buf_set_option(buf, "readonly", false)
+  vim.api.nvim_buf_set_option(buf, "modifiable", true)
+end
+
+local function user_option_set(opt_name, opt_value, arg)
   if opt_value == "false" then
     user_options[opt_name] = false
+    print("Setting " .. opt_name .. " to false")
   elseif opt_value == "true" then
     user_options[opt_name] = true
+    print("Setting " .. opt_name .. " to true")
   else
-    user_options[opt_name] = opt_value
+    local s = opt_value
+    for i, x in ipairs(arg) do
+      s = s .. " " .. x
+    end
+    user_options[opt_name] = s
+    print("Setting " .. opt_name .. " to " .. s)
   end
 end
 
@@ -35,6 +52,18 @@ local function open_buffer()
   -- print("Using buffer " .. buffer_number)
   local relbuf = buffer_number
   vim.api.nvim_buf_attach(buffer_number, false, {on_detach=function(...) if cubby_buffers[relbuf] ~= nil then cubby_buffers[relbuf] = nil end end})
+end
+
+local function open_buffer_list()
+  local open_cmd = user_options[OpenWith];
+  if open_cmd == nil then
+    open_cmd = 'enew'
+  end
+  vim.api.nvim_command(open_cmd)
+  local buffer_number = vim.api.nvim_get_current_buf()
+  -- print("Using buffer " .. buffer_number)
+  local relbuf = buffer_number
+  vim.api.nvim_buf_attach(buffer_number, false, {on_detach=function(...) if cubby_buffers[relbuf] ~= nil then cubby_list_buffers[relbuf] = nil; buffer_readonly_disable(relbuf) end end})
 end
 
 -- Translate filetype from Cubby format to vim
@@ -176,8 +205,22 @@ function M.get(key)
   current_buffer_set_nofile()
 end
 
-function M.set_option(key, value)
-  user_option_set(key, value)
+function table.slice(tbl, first, last, step)
+  local sliced = {}
+
+  for i = first or 1, last or #tbl, step or 1 do
+    sliced[#sliced+1] = tbl[i]
+  end
+
+  return sliced
+end
+
+function M.set_option(...)
+  local arg = {...}
+  local key = arg[1]
+  local value = arg[2]
+  local varargs = table.slice(arg, 3, #arg, 1)
+  user_option_set(key, value, varargs)
 end
 
 function M.save()
@@ -226,23 +269,13 @@ local function render_list(data, lines, ids, n_indents0)
   end
 end
 
-local function buffer_readonly(buf)
-  vim.api.nvim_buf_set_option(buf, "readonly", true)
-  vim.api.nvim_buf_set_option(buf, "modifiable", false)
-end
-
-local function buffer_readonly_disable(buf)
-  vim.api.nvim_buf_set_option(buf, "readonly", false)
-  vim.api.nvim_buf_set_option(buf, "modifiable", true)
-end
-
 
 function M.list()
   if not cubby_check() then
     print("Cubby is not installed in PATH - please see cubbycli.com for instructions.")
     return
   end
-  open_buffer()
+  open_buffer_list()
   local dat = cubby_list()
   local lines = {}
   local ids = {}
