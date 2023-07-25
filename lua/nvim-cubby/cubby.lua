@@ -81,11 +81,16 @@ end
 
 -- List Cubby blobs
 local function cubby_list()
-  local cmd = "cubby list"
+  local cmd = "cubby list -J"
   local handle = io.popen(cmd)
   local result = handle:read("*a")
   handle:close()
-  return result
+  if result == nil then
+    return nil
+  end
+  local parsed = json.parse(result)
+  return parsed
+  -- return result
 end
 
 local function cubby_put(key, blob_type)
@@ -177,6 +182,23 @@ function M.put(key, blob_type)
   end
 end
 
+local function render_list(data, lines, n_indents0)
+  local n_indents = 0
+  if n_indents0 ~= nil then
+    n_indents = n_indents0
+  end
+  local s = ""
+  for i = 1, n_indents do
+    s = s .. ". "
+  end
+  s = s .. data["title"] .. " - " .. data["id"]
+  table.insert(lines, s)
+  if data["children"] ~= nil then
+    for i, v in ipairs(data["children"]) do
+      render_list(v, lines, n_indents+1)
+    end
+  end
+end
 
 function M.list()
   if not cubby_check() then
@@ -184,11 +206,9 @@ function M.list()
     return
   end
   open_buffer()
-  local txt = cubby_list()
+  local dat = cubby_list()
   local lines = {}
-  for s in txt:gmatch("([^\n]*)\n?") do
-    table.insert(lines, s)
-  end
+  render_list(dat, lines)
   vim.api.nvim_buf_set_lines(buffer_number, 0, -1, true, lines)
   current_buffer_set_nofile()
 end
