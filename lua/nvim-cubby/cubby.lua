@@ -7,7 +7,6 @@ local json = require("nvim-cubby.json")
 -- Creates an object for the module.
 local M = {}
 
-local buffer_number = -1
 local cubby_buffers = {}
 local cubby_list_buffers = {}
 
@@ -27,17 +26,15 @@ end
 
 -- Open a new buffer
 local function open_buffer()
-    if true or buffer_number == -1 then
-        -- vim.api.nvim_command('botright vnew')
-        local open_cmd = user_options[OpenWith];
-        if open_cmd == nil then
-          open_cmd = 'enew'
-        end
-        vim.api.nvim_command(open_cmd)
-        buffer_number = vim.api.nvim_get_current_buf()
-        local relbuf = buffer_number
-        vim.api.nvim_buf_attach(buffer_number, false, {on_detach=function(...) if cubby_buffers[relbuf] ~= nil then cubby_buffers[relbuf] = nil end end})
-    end
+  local open_cmd = user_options[OpenWith];
+  if open_cmd == nil then
+    open_cmd = 'enew'
+  end
+  vim.api.nvim_command(open_cmd)
+  local buffer_number = vim.api.nvim_get_current_buf()
+  -- print("Using buffer " .. buffer_number)
+  local relbuf = buffer_number
+  vim.api.nvim_buf_attach(buffer_number, false, {on_detach=function(...) if cubby_buffers[relbuf] ~= nil then cubby_buffers[relbuf] = nil end end})
 end
 
 -- Translate filetype from Cubby format to vim
@@ -174,7 +171,7 @@ function M.get(key)
   for s in res:gmatch("([^\n]*)\n?") do
     table.insert(lines, s)
   end
-  vim.api.nvim_buf_set_lines(buffer_number, 0, -1, true, lines)
+  vim.api.nvim_buf_set_lines(vim.api.nvim_get_current_buf(), 0, -1, true, lines)
   cubby_get_set_filetype(key)
   current_buffer_set_nofile()
 end
@@ -229,6 +226,17 @@ local function render_list(data, lines, ids, n_indents0)
   end
 end
 
+local function buffer_readonly(buf)
+  vim.api.nvim_buf_set_option(buf, "readonly", true)
+  vim.api.nvim_buf_set_option(buf, "modifiable", false)
+end
+
+local function buffer_readonly_disable(buf)
+  vim.api.nvim_buf_set_option(buf, "readonly", false)
+  vim.api.nvim_buf_set_option(buf, "modifiable", true)
+end
+
+
 function M.list()
   if not cubby_check() then
     print("Cubby is not installed in PATH - please see cubbycli.com for instructions.")
@@ -241,7 +249,8 @@ function M.list()
   render_list(dat, lines, ids)
   local cur_buf = vim.api.nvim_get_current_buf()
   cubby_list_buffers[cur_buf] = ids
-  vim.api.nvim_buf_set_lines(buffer_number, 0, -1, true, lines)
+  vim.api.nvim_buf_set_lines(cur_buf, 0, -1, true, lines)
+  buffer_readonly(cur_buf)
   current_buffer_set_nofile()
 end
 
