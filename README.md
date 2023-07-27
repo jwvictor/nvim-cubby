@@ -22,7 +22,9 @@ You can edit the blob, and then commit your changes by running `:CubbySave`. If 
 
 To view a `cubby list`, use the `:CubbyList` command. This will open a `cubby list` in a new, read-only buffer.
 
-You can use this buffer to quickly jump into any of your blobs. Simply go to the line number of the blob you want to open and run `:CubbyGo`. nvim-cubby will obtain the blob's unique ID and open it in a new buffer. 
+You can use this buffer to quickly jump into any of your blobs. Simply go to the line number of the blob you want to open and run `:CubbyGo`. nvim-cubby will obtain the blob's unique ID and open it in a new buffer.
+
+Similarly, you can delete a blob you select from the listing by running `:CubbyRm`. This will mark the blob as deleted and you won't see it anymore, although it can still be resurrected from the backup json.
 
 ### Creating blobs
 
