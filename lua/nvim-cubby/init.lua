@@ -11,6 +11,7 @@ M.cubby_get = cubby.get
 M.cubby_save = cubby.save
 M.cubby_list = cubby.list
 M.cubby_go = cubby.go
+M.cubby_rm = cubby.rm
 M.cubby_put = cubby.put
 M.cubby_set_option = cubby.set_option
 

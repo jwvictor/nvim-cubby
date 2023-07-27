@@ -79,6 +79,34 @@ local function filetype_to_vim(ft)
   return ft
 end
 
+
+local function cubby_rm()
+  local cur_buf = vim.api.nvim_get_current_buf()
+  local ids = cubby_list_buffers[cur_buf]
+  if ids == nil then
+    print("This buffer is not a Cubby list.")
+    return
+  end
+  local cursor = vim.api.nvim_win_get_cursor(0)
+  local r = cursor[1]
+  if r <= #ids then
+    local id = ids[r]
+    local cmd = "cubby rm " .. id
+    local handle = io.popen(cmd)
+    if handle == nil then
+      return false
+    end
+    local result = handle:read("*a")
+    handle:close()
+    local rv = result ~= nil and string.len(result) > 0
+    if rv then
+      vim.api.nvim_buf_delete(cur_buf, {force = true})
+    end
+    return rv
+  end
+  return false
+end
+
 -- Go to line in Cubby listing
 local function cubby_go()
   local cur_buf = vim.api.nvim_get_current_buf()
@@ -243,6 +271,14 @@ function M.save()
     return
   end
   cubby_save()
+end
+
+function M.rm()
+  if not cubby_check() then
+    print("Cubby is not installed in PATH - please see cubbycli.com for instructions.")
+    return
+  end
+  cubby_rm()
 end
 
 function M.go()

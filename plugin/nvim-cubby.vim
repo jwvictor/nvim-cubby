@@ -23,6 +23,7 @@ let g:loaded_nvimcubby = 1
 command! -nargs=1 CubbyGet lua require("nvim-cubby").cubby_get(<f-args>)
 command! -nargs=0 CubbySave lua require("nvim-cubby").cubby_save()
 command! -nargs=0 CubbyGo lua require("nvim-cubby").cubby_go()
+command! -nargs=0 CubbyRm lua require("nvim-cubby").cubby_rm()
 command! -nargs=0 CubbyList lua require("nvim-cubby").cubby_list()
 command! -nargs=* CubbyPut lua require("nvim-cubby").cubby_put(<f-args>)
 command! -nargs=* CubbySet lua require("nvim-cubby").cubby_set_option(<f-args>)
