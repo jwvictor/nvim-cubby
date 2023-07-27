@@ -146,7 +146,7 @@ local function cubby_save()
     print("Saving to Cubby: " .. key)
     local lines_dat = vim.api.nvim_buf_get_lines(cur_buf, 0, -1, true)
     -- vim.api.nvim_buf_delete(cur_buf, {force = true})
-    local cmd = "cubby set \"" .. key .. "\" 2>/dev/null"
+    local cmd = "cubby set \"" .. key .. "\" 2>/dev/null 1>/dev/null"
     cmd = maybe_cryptopass_command(cmd)
     local f = io.popen(cmd, "w")
     f:write(table.concat(lines_dat, "\n"))
